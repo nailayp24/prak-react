@@ -1,40 +1,62 @@
 import frameworkData from "./framework.json";
 
 export default function FrameworkList() {
-  return (
-    <div className="p-8">
+return (
+  <div className="p-8 bg-[#F5E6D3] min-h-screen font-sans">
+    {/* Subtle rice paper texture effect via background */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
       {frameworkData.map((item) => (
         <div
           key={item.id}
-          className="border p-4 mb-4 rounded-lg shadow-md bg-white"
+          className="group relative bg-[#FFFDF8] p-6 rounded-xl shadow-md border-2 border-[#D4A574] hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         >
-          <h2 className="text-lg font-bold text-gray-800">{item.name}</h2>
-          <p className="text-gray-600">{item.description}</p>
+          {/* Corner accent - scroll-like feel */}
+          <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#C75B39] rotate-45 transform origin-top-right -translate-y-12 translate-x-12 group-hover:translate-x-10 transition-transform"></div>
+            <span className="absolute top-2 right-1 text-[10px] font-bold text-[#FFFDF8] rotate-45">
+              {item.details.releaseYear}
+            </span>
+          </div>
 
-          <p className="text-blue-500 bg-gray-300 w-fit">
-            {item.details.developer}
-            <span className="font-bold">{item.details.releaseYear}</span>
+          <div className="pr-12 mb-3">
+            <h2 className="text-2xl font-bold text-[#2C1810] tracking-tight">
+              {item.name}
+            </h2>
+          </div>
+
+          <p className="text-[#5C4A42] mb-4 leading-relaxed text-sm">
+            {item.description}
           </p>
+
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs text-[#8B7355]">Master</span>
+            <span className="text-xs font-bold text-[#C75B39] bg-[#F5E6D3] px-3 py-1 rounded-full border border-[#D4A574]">
+              {item.details.developer}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-6">
+            {item.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="bg-[#E8D5C4] text-[#5C4A42] px-3 py-1 text-xs font-medium rounded-full border border-[#D4A574]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
 
           <a
             href={item.details.officialWebsite}
-            className="text-blue-500
-                         underline"
+            className="inline-block w-full text-center py-3 rounded-lg bg-[#C75B39] text-[#FFFDF8] font-bold hover:bg-[#A84830] transition-colors shadow-md"
             target="_blank"
+            rel="noopener noreferrer"
           >
-            Visit Website"
+            Enter the Dojo →
           </a>
-
-          {item.tags.map((tag, index) => (
-            <span
-              key={index}
-              className="bg-gray-200 text-gray-700 px-2 py-1 text-xs rounded mr-2"
-            >
-              {tag}
-            </span>
-          ))}
         </div>
       ))}
     </div>
-  );
+  </div>
+);
 }
