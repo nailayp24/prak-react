@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import { Route, Routes } from "react-router-dom";
 import Orders from "./pages/Orders";
 import Customers from "./pages/Customers";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -20,8 +21,9 @@ function App() {
         <Sidebar />
         <div id="main-content" className="flex-1 p-4 md:p-6 xl:p-8">
           <Header />
-          
+
           <Routes>
+            <Route path="*" element={<NotFound />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/customers" element={<Customers />} />
