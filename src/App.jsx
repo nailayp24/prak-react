@@ -1,54 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import { createRoot } from "react-dom/client";
+import "./assets/tailwind.css";
+import Sidebar from "./layout/Sidebar";
+import Header from "./layout/Header";
+import PageHeader from "./components/PageHeader";
+import Dashboard from "./pages/Dashboard";
+import { Route, Routes } from "react-router-dom";
+import Orders from "./pages/Orders";
+import Customers from "./pages/Customers";
 
 function App() {
-  const advantages = [
-    {
-      id: 1,
-      icon: "🌐",
-      title: "Akreditasi Internasional",
-      desc: "Kurikulum kami telah diakui secara global, mempersiapkan mahasiswa untuk bersaing di kancah dunia."
-    },
-    {
-      id: 2,
-      icon: "💡",
-      title: "Inovasi Berkelanjutan",
-      desc: "Pusat riset dan inkubasi bisnis yang mendukung mahasiswa melahirkan ide-ide disruptif."
-    },
-    {
-      id: 3,
-      icon: "🚀",
-      title: "Koneksi Industri",
-      desc: "Bekerja sama dengan lebih dari 100+ perusahaan top untuk program magang dan penempatan kerja."
-    }
-  ];
+  const [count, setCount] = useState(0);
 
   return (
-    <div className="campus-container">
-      {/* Hero Section */}
-      <header className="hero-section">
-        <h1>Excellent University</h1>
-        <p>Membentuk Pemimpin Masa Depan dengan Integritas dan Inovasi.</p>
-      </header>
-
-      {/* Advantages Section */}
-      <section className="advantages-wrapper">
-        {advantages.map((item) => (
-          <div key={item.id} className="advantage-card">
-            <span className="advantage-icon">{item.icon}</span>
-            <h3>{item.title}</h3>
-            <p>{item.desc}</p>
-          </div>
-        ))}
-      </section>
-      
-      <footer style={{ textAlign: 'center', padding: '40px', color: '#b2bec3' }}>
-        <p>&copy; 2024 Excellent University. All Rights Reserved.</p>
-      </footer>
+    <div className="min-h-screen bg-latar font-poppins text-teks">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <Sidebar />
+        <div id="main-content" className="flex-1 p-4 md:p-6 xl:p-8">
+          <Header />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/customers" element={<Customers />} />
+          </Routes>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default App
+export default App;
