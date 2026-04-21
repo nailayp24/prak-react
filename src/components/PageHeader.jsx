@@ -1,8 +1,10 @@
-export default function PageHeader() {
+export default function PageHeader(props) {
     return (
         <div id="pageheader-container">
             <div id="pageheader-left">
-                <span id="page-title">Dashboard</span>
+                <span id="page-title">
+                    {props.title}
+                </span>
                 <div id="breadcrumb-links">
                     <span className="text-gray-400 cursor-pointer hover:text-orange-500">Home</span>
                     <span id="breadcrumb-separator">/</span>

@@ -1,4 +1,5 @@
 import { FaShoppingCart, FaTruck, FaBan, FaDollarSign, FaHistory } from "react-icons/fa";
+import PageHeader from "../components/PageHeader";
 
 export default function Dashboard() {
     // Data Tabel dengan 3 nama teratas diganti (Zami, Darel, Nabilla)
@@ -12,6 +13,7 @@ export default function Dashboard() {
 
     return (
         <div id="dashboard-container" className="p-6">
+              <PageHeader title="Dashboard"/>
             {/* Stats Cards Section */}
             <div id="dashboard-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div id="dashboard-orders" className="hover-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center">
