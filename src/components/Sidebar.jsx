@@ -1,4 +1,10 @@
-import { FaThLarge, FaClipboardList, FaUserFriends, FaExclamationTriangle } from "react-icons/fa"; 
+import { 
+  FaThLarge, 
+  FaClipboardList, 
+  FaUserFriends, 
+  FaExclamationTriangle, 
+  FaBoxOpen // Icon baru untuk Products
+} from "react-icons/fa"; 
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
@@ -14,9 +20,27 @@ export default function Sidebar() {
       </div>
 
       <ul className="space-y-2 flex-1">
-        <li><NavLink to="/" className={menuClass}><FaThLarge /> <span>Dashboard</span></NavLink></li>
-        <li><NavLink to="/orders" className={menuClass}><FaClipboardList /> <span>Orders</span></NavLink></li>
-        <li><NavLink to="/customers" className={menuClass}><FaUserFriends /> <span>Customers</span></NavLink></li>
+        <li>
+          <NavLink to="/" className={menuClass}>
+            <FaThLarge /> <span>Dashboard</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/orders" className={menuClass}>
+            <FaClipboardList /> <span>Orders</span>
+          </NavLink>
+        </li>
+        {/* MENU PRODUCTS BARU */}
+        <li>
+          <NavLink to="/products" className={menuClass}>
+            <FaBoxOpen /> <span>Products</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/customers" className={menuClass}>
+            <FaUserFriends /> <span>Customers</span>
+          </NavLink>
+        </li>
         
         <li className="pt-4 pb-2 text-[10px] font-black text-gray-300 uppercase tracking-widest">Error Pages</li>
         <li><NavLink to="/error-400" className={menuClass}><FaExclamationTriangle /> <span>Error 400</span></NavLink></li>
