@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PageHeader from "../components/PageHeader";
 
 // Import data langsung dari folder data
-import productData from "../data/products.json"; 
+import productData from "../data/Products.json"; 
 
 export default function Products() {
   // Menggunakan data dari JSON sebagai state awal
