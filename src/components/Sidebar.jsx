@@ -57,6 +57,12 @@ export default function Sidebar() {
           </NavLink>
         </li>
 
+         <li>
+          <NavLink to="/fitur-xyz" className={menuClass}>
+            <FaUserFriends /> <span>Fitur XYZ</span>
+          </NavLink>
+        </li>
+        
         <li className="pt-4 pb-2 text-[10px] font-black text-gray-300 uppercase tracking-widest">
           Error Pages
         </li>

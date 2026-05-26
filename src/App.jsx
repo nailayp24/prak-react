@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import React, { Suspense } from "react";
 import Loading from "./components/Loading";
+import FiturXyz from "./pages/FiturXyz";
 // import Dashboard from "./pages/Dashboard";
 // import Orders from "./pages/Orders";
 // import Customers from "./pages/Customers";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/customers" element={<Customers />} />
            <Route path="/components" element={<Components />} />
+           <Route path="/fitur-xyz" element={<FiturXyz />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductDetail />} />
 
