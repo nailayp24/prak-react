@@ -14,4 +14,4 @@ export default function FiturXyz() {
       <p>Ini halaman fitur XYZ</p>
     </div>
   );
-}
+}SS
