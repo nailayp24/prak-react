@@ -6,6 +6,7 @@ import {
   FaBoxOpen,
   FaList, // PERBAIKAN 1: Menambahkan FaList di sini agar terdefinisi dan tidak error
 } from "react-icons/fa";
+import { FaNoteSticky } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
@@ -60,6 +61,12 @@ export default function Sidebar() {
          <li>
           <NavLink to="/fitur-xyz" className={menuClass}>
             <FaUserFriends /> <span>Fitur XYZ</span>
+          </NavLink>
+        </li>
+
+         <li>
+          <NavLink to="/notes" className={menuClass}>
+            <FaNoteSticky /> <span>Notes</span>
           </NavLink>
         </li>
         
