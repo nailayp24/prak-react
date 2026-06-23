@@ -1,8 +1,8 @@
-import axios from "axios";
 import { useState } from "react";
 import { BsFillExclamationDiamondFill } from "react-icons/bs";
 import { ImSpinner2 } from "react-icons/im";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../../services/supabaseClient";
 
 export default function Login() {
   /* navigate, state & handleChange*/
@@ -29,31 +29,31 @@ export default function Login() {
     setLoading(true);
     setError(false);
 
-    axios
-      .post("https://dummyjson.com/user/login", {
-        username: dataForm.email,
-        password: dataForm.password,
-      })
-      .then((response) => {
-        // Jika status bukan 200, tampilkan pesan error
-        if (response.status !== 200) {
-          setError(response.data.message);
-          return;
-        }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: dataForm.email,
+      password: dataForm.password,
+    });
 
-        // Redirect ke dashboard jika login sukses
-        navigate("/");
-      })
-      .catch((err) => {
-        if (err.response) {
-          setError(err.response.data.message || "An error occurred");
-        } else {
-          setError(err.message || "An unknown error occurred");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    setLoading(false);
+
+    if (!profileData?.role) {
+      setError("Profile user belum ditemukan. Pastikan user ada di tabel profiles.");
+      return;
+    }
+
+    navigate(profileData?.role === "admin" ? "/" : "/member");
   };
 
   /* error & loading status */
@@ -117,6 +117,13 @@ export default function Login() {
         >
           Login
         </button>
+
+        <p className="text-center text-sm text-gray-500 mt-5">
+          Belum punya akun?{" "}
+          <Link to="/register" className="text-green-600 font-semibold hover:text-green-700">
+            Register
+          </Link>
+        </p>
       </form>
     </div>
   );

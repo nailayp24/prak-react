@@ -1,42 +1,85 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import PageHeader from "../components/PageHeader";
-
-// Import data langsung dari folder data
-import productData from "../data/Products.json"; 
+import { supabase } from "../services/supabaseClient";
 
 export default function Products() {
-  // Menggunakan data dari JSON sebagai state awal
-  const [products, setProducts] = useState(productData);
+  // Menggunakan data dari Supabase sebagai state awal
+  const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   
   // State untuk form input produk baru
   const [formData, setFormData] = useState({
-    title: '',
-    category: 'Electronics',
-    brand: '',
+    name: '',
     price: '',
     stock: ''
   });
 
-  // Fungsi menambah produk baru ke dalam tabel (state)
-  const handleAddProduct = (e) => {
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setProducts(data || []);
+  };
+
+  const openAddModal = () => {
+    setSelectedProduct(null);
+    setFormData({ name: '', price: '', stock: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (product) => {
+    setSelectedProduct(product);
+    setFormData({
+      name: product.name,
+      price: product.price,
+      stock: product.stock
+    });
+    setShowModal(true);
+  };
+
+  // Fungsi menambah produk baru ke dalam tabel Supabase
+  const handleSaveProduct = async (e) => {
     e.preventDefault();
-    const newProduct = {
-      id: products.length + 1,
-      // Generate kode otomatis berdasarkan urutan terakhir
-      code: `PRD${String(products.length + 1).padStart(3, '0')}`,
-      ...formData,
-      price: parseInt(formData.price),
-      stock: parseInt(formData.stock)
+    const payload = {
+      name: formData.name,
+      price: Number(formData.price),
+      stock: Number(formData.stock)
     };
+
+    if (selectedProduct) {
+      await supabase
+        .from("products")
+        .update(payload)
+        .eq("id", selectedProduct.id);
+      alert('Produk berhasil diperbarui!');
+    } else {
+      await supabase
+        .from("products")
+        .insert(payload);
+      alert('Produk berhasil ditambahkan!');
+    }
     
-    setProducts([...products, newProduct]);
     setShowModal(false);
-    
-    // Reset form setelah simpan
-    setFormData({ title: '', category: 'Electronics', brand: '', price: '', stock: '' });
-    alert('Produk berhasil ditambahkan!');
+    setSelectedProduct(null);
+    setFormData({ name: '', price: '', stock: '' });
+    loadProducts();
+  };
+
+  const handleDeleteProduct = async (id) => {
+    const konfirmasi = confirm("Yakin ingin menghapus produk ini?");
+    if (!konfirmasi) return;
+
+    await supabase
+      .from("products")
+      .delete()
+      .eq("id", id);
+    loadProducts();
   };
 
   // Helper untuk format mata uang Rupiah
@@ -55,7 +98,7 @@ export default function Products() {
         breadcrumb={["Product List"]}
       >
         <button 
-          onClick={() => setShowModal(true)} 
+          onClick={openAddModal} 
           className="bg-[#00B074] hover:bg-[#009663] text-white py-3 px-6 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-green-100 transition-all"
         >
           <span className="text-xl">+</span> Add New Product
@@ -70,33 +113,21 @@ export default function Products() {
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Code</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product Name</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Brand</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {products.map((product, idx) => (
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0">
                   <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-800">
-                    {product.code}
+                    PRD{String(idx + 1).padStart(3, '0')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/products/${product.id}`} 
-                      className="text-[#00B074] hover:text-[#009663] font-semibold hover:underline"
-                    >
-                      {product.title}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
-                      {product.category}
+                    <span className="text-[#00B074] font-semibold">
+                      {product.name}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                    {product.brand}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-bold text-[#00B074]">
                     {formatPrice(product.price)}
@@ -105,6 +136,10 @@ export default function Products() {
                     <span className={`font-semibold ${product.stock < 10 ? 'text-red-500' : 'text-gray-600'}`}>
                       {product.stock} pcs
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button onClick={() => openEditModal(product)} className="text-[#00B074] font-semibold mr-4">Edit</button>
+                    <button onClick={() => handleDeleteProduct(product.id)} className="text-red-500 font-semibold">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -124,47 +159,19 @@ export default function Products() {
             <div className="flex min-h-full items-center justify-center p-4">
               <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 overflow-hidden">
                 <div className="border-b border-gray-100 p-5">
-                  <h2 className="text-xl font-bold text-gray-800 text-left">Add New Product</h2>
+                  <h2 className="text-xl font-bold text-gray-800 text-left">{selectedProduct ? "Edit Product" : "Add New Product"}</h2>
                 </div>
                 
-                <form onSubmit={handleAddProduct} className="p-5 space-y-4">
+                <form onSubmit={handleSaveProduct} className="p-5 space-y-4">
                   <div className="text-left">
                     <label className="block text-gray-700 font-semibold text-sm mb-1.5">Product Title</label>
                     <input
                       type="text" required
                       placeholder="e.g. iPhone 15 Pro"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00B074] text-sm"
-                      value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-left">
-                    <div>
-                      <label className="block text-gray-700 font-semibold text-sm mb-1.5">Category</label>
-                      <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
-                        value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      >
-                        <option value="Electronics">Electronics</option>
-                        <option value="Accessories">Accessories</option>
-                        <option value="Appliances">Appliances</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Furniture">Furniture</option>
-                        <option value="Toys">Toys</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 font-semibold text-sm mb-1.5">Brand</label>
-                      <input
-                        type="text" required
-                        placeholder="Brand name"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                        value={formData.brand}
-                        onChange={(e) => setFormData({...formData, brand: e.target.value})}
-                      />
-                    </div>
                   </div>
 
                   <div className="text-left">

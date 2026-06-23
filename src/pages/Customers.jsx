@@ -1,43 +1,61 @@
 // pages/Customers.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageHeader from "../components/PageHeader";
-
-// Generate 30 data customer lengkap
-const generateCustomerData = () => {
-  const firstNames = ["Naila Putri", "Nana", "Ahmed", "Setiawan", "Sarah Johnson", "Kanda", "Jessica Lee", "Kevin Wong", "Lisa Garcia", "William Kim"];
-  const emails = ["gmail.com", "yahoo.com", "outlook.com", "icloud.com"];
-  const phones = ["0812", "0813", "0856", "0878"];
-  const loyalties = ["Bronze", "Silver", "Gold"];
-  
-  return Array.from({ length: 30 }, (_, i) => ({
-    customerId: `CUST-${String(1000 + i).padStart(4, '0')}`,
-    customerName: firstNames[i % firstNames.length],
-    email: `customer${i + 1}@${emails[i % emails.length]}`,
-    phone: `${phones[i % phones.length]}-${String(1000 + i).slice(0,4)}-${String(2000 + i).slice(0,4)}`,
-    loyalty: loyalties[i % 3]
-  }));
-};
+import { supabase } from "../services/supabaseClient";
 
 export default function Customers() {
-  const [customers, setCustomers] = useState(generateCustomerData());
+  const [customers, setCustomers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [formData, setFormData] = useState({
-    customerName: '',
-    email: '',
-    phone: '',
-    loyalty: 'Bronze'
+    full_name: '',
+    role: 'member',
+    tier: 'bronze'
   });
 
-  const handleAddCustomer = (e) => {
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  const loadCustomers = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setCustomers(data || []);
+  };
+
+  const openEditModal = (customer) => {
+    setSelectedCustomer(customer);
+    setFormData({
+      full_name: customer.full_name,
+      role: customer.role,
+      tier: customer.tier
+    });
+    setShowModal(true);
+  };
+
+  const handleUpdateCustomer = async (e) => {
     e.preventDefault();
-    const newCustomer = {
-      customerId: `CUST-${String(1000 + customers.length).padStart(4, '0')}`,
-      ...formData
-    };
-    setCustomers([...customers, newCustomer]);
+    await supabase
+      .from("profiles")
+      .update(formData)
+      .eq("id", selectedCustomer.id);
     setShowModal(false);
-    setFormData({ customerName: '', email: '', phone: '', loyalty: 'Bronze' });
-    alert('Customer berhasil ditambahkan!');
+    setSelectedCustomer(null);
+    loadCustomers();
+    alert('Customer berhasil diperbarui!');
+  };
+
+  const handleDeleteCustomer = async (id) => {
+    const konfirmasi = confirm("Yakin ingin menghapus customer ini?");
+    if (!konfirmasi) return;
+
+    await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", id);
+    loadCustomers();
   };
 
   return (
@@ -47,7 +65,7 @@ export default function Customers() {
         breadcrumb={["Customer List"]}
       >
         <button 
-          onClick={() => setShowModal(true)} 
+          onClick={() => alert("Customer baru dibuat melalui halaman Register agar tersinkron dengan Supabase Auth.")} 
           className="bg-[#00B074] hover:bg-[#009663] text-white py-3 px-6 rounded-2xl font-bold flex items-center gap-2 shadow-lg shadow-green-100 transition-all"
         >
           <span className="text-xl">+</span> Add New Customer
@@ -62,30 +80,35 @@ export default function Customers() {
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer ID</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer Name</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email & Phone</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role & Points</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Loyalty</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {customers.map((c, idx) => (
-                <tr key={c.customerId} className={`hover:bg-gray-50 transition-colors ${idx !== customers.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                <tr key={c.id} className={`hover:bg-gray-50 transition-colors ${idx !== customers.length - 1 ? 'border-b border-gray-100' : ''}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-[#00B074] font-bold">{c.customerId}</span>
+                    <span className="text-[#00B074] font-bold">{c.id.slice(0, 8)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="font-semibold text-gray-800">{c.customerName}</span>
+                    <span className="font-semibold text-gray-800">{c.full_name}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-700">{c.email}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{c.phone}</div>
+                    <div className="text-sm text-gray-700">{c.role}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{c.points} poin</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      c.loyalty === 'Gold' ? 'bg-yellow-100 text-yellow-700' : 
-                      c.loyalty === 'Silver' ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-700'
+                      c.tier === 'gold' || c.tier === 'platinum' ? 'bg-yellow-100 text-yellow-700' : 
+                      c.tier === 'silver' ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-700'
                     }`}>
-                      {c.loyalty}
+                      {c.tier}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button onClick={() => openEditModal(c)} className="text-[#00B074] font-semibold mr-4">Edit</button>
+                    <button onClick={() => handleDeleteCustomer(c.id)} className="text-red-500 font-semibold">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -110,7 +133,7 @@ export default function Customers() {
                 {/* Modal Header */}
                 <div className="border-b border-gray-100 p-5">
                   <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-gray-800">Add New Customer</h2>
+                    <h2 className="text-xl font-bold text-gray-800">Edit Customer</h2>
                     <button 
                       onClick={() => setShowModal(false)}
                       className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -120,11 +143,11 @@ export default function Customers() {
                       </svg>
                     </button>
                   </div>
-                  <p className="text-gray-500 text-xs mt-1">Fill in the customer details below</p>
+                  <p className="text-gray-500 text-xs mt-1">Update customer profile below</p>
                 </div>
 
                 {/* Modal Body - Form */}
-                <form onSubmit={handleAddCustomer} className="p-5 space-y-4">
+                <form onSubmit={handleUpdateCustomer} className="p-5 space-y-4">
                   <div>
                     <label className="block text-gray-700 font-semibold text-sm mb-1.5">
                       Customer Name <span className="text-red-500">*</span>
@@ -134,37 +157,23 @@ export default function Customers() {
                       required
                       placeholder="Enter customer name"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00B074] focus:ring-1 focus:ring-[#00B074] transition-all text-sm"
-                      value={formData.customerName}
-                      onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                     />
                   </div>
 
                   <div>
                     <label className="block text-gray-700 font-semibold text-sm mb-1.5">
-                      Email <span className="text-red-500">*</span>
+                      Role <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="customer@example.com"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00B074] focus:ring-1 focus:ring-[#00B074] transition-all text-sm"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-semibold text-sm mb-1.5">
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="0812-XXXX-XXXX"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00B074] focus:ring-1 focus:ring-[#00B074] transition-all text-sm"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
+                    <select
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00B074] focus:ring-1 focus:ring-[#00B074] transition-all cursor-pointer text-sm"
+                      value={formData.role}
+                      onChange={(e) => setFormData({...formData, role: e.target.value})}
+                    >
+                      <option value="member">member</option>
+                      <option value="admin">admin</option>
+                    </select>
                   </div>
 
                   <div>
@@ -173,12 +182,13 @@ export default function Customers() {
                     </label>
                     <select
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#00B074] focus:ring-1 focus:ring-[#00B074] transition-all cursor-pointer text-sm"
-                      value={formData.loyalty}
-                      onChange={(e) => setFormData({...formData, loyalty: e.target.value})}
+                      value={formData.tier}
+                      onChange={(e) => setFormData({...formData, tier: e.target.value})}
                     >
-                      <option value="Bronze">🥉 Bronze</option>
-                      <option value="Silver">🥈 Silver</option>
-                      <option value="Gold">🥇 Gold</option>
+                      <option value="bronze">Bronze</option>
+                      <option value="silver">Silver</option>
+                      <option value="gold">Gold</option>
+                      <option value="platinum">Platinum</option>
                     </select>
                   </div>
 
@@ -195,7 +205,7 @@ export default function Customers() {
                       type="submit"
                       className="flex-1 px-4 py-2 bg-[#00B074] text-white font-semibold rounded-lg hover:bg-[#009663] transition-all text-sm"
                     >
-                      Add Customer
+                      Save Customer
                     </button>
                   </div>
                 </form>
